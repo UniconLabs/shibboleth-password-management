@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+    id 'idea'    
+}
+
+repositories {
+    maven { url 'https://build.shibboleth.net/nexus/content/groups/public' }
+    jcenter()
+}
+
+dependencies {    
+    //Import BOMs
+    implementation platform("net.shibboleth.idp:idp-bom:${project.'shibboleth.version'}")
+    implementation platform('org.junit:junit-bom:5.6.2')
+
+    compileOnly 'ch.qos.logback:logback-core'
+    testCompile 'org.junit.jupiter:junit-jupiter'    
+}

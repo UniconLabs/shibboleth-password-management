@@ -1,0 +1,15 @@
+out/
+.classpath
+.project
+.settings
+target/
+.idea/
+.DS_Store
+overlays/
+build/
+bin/
+.gradle/
+*.iml
+*.ipr
+*.iws
+requirements/
