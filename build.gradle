@@ -16,6 +16,8 @@ dependencies {
     implementation 'net.shibboleth.idp:idp-profile-api'
     compileOnly 'ch.qos.logback:logback-core'
 
+    implementation 'javax.mail:javax.mail-api:1.6.2'
+
     compileOnly 'org.projectlombok:lombok:1.18.12'
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
 
