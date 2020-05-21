@@ -16,29 +16,26 @@ import java.io.IOException;
 @AllArgsConstructor
 public class PasswordResetInit extends AbstractProfileAction {
 
-    private StorageService storageService;
+    private final StorageService storageService;
 
     @Nonnull
     @Override
     protected Event doExecute(@Nonnull RequestContext springRequestContext, @Nonnull ProfileRequestContext profileRequestContext) {
         String token = springRequestContext.getExternalContext().getRequestParameterMap().get("token");
-        String storedToken = null;
+        String username;
         log.info("Received token: [{}]", token);
         try {
-            StorageRecord<String> storageRecord = this.storageService.read("passwordreset", "token");
+            StorageRecord<String> storageRecord = this.storageService.read("passwordreset", token);
             if(storageRecord == null) {
                 return new Event(this, "error");
             }
-            storedToken = storageRecord.getValue();
+            username = storageRecord.getValue();
+            log.info("Found username [{}] bound to reset token [{}]", username, token);
         }
         catch (IOException e) {
             log.error(e.getMessage(), e);
             return new Event(this, "error");
         }
-        log.info("Stored token is [{}]", storedToken);
-
-        springRequestContext.getFlowScope().put("resetToken", token);
-
         return new Event(this, "success");
     }
 }
