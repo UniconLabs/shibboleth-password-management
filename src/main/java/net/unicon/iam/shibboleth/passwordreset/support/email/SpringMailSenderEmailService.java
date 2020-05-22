@@ -1,9 +1,8 @@
-package net.unicon.iam.shibboleth.passwordreset.support;
+package net.unicon.iam.shibboleth.passwordreset.support.email;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMailMessage;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.util.StringUtils;
 

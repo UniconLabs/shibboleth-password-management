@@ -1,4 +1,4 @@
-package net.unicon.iam.shibboleth.passwordreset.support;
+package net.unicon.iam.shibboleth.passwordreset.support.email;
 
 import lombok.Data;
 

@@ -5,16 +5,13 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.unicon.iam.shibboleth.passwordreset.service.PasswordManagementService;
-import net.unicon.iam.shibboleth.passwordreset.support.EmailProperties;
-import net.unicon.iam.shibboleth.passwordreset.support.EmailService;
+import net.unicon.iam.shibboleth.passwordreset.support.email.EmailProperties;
+import net.unicon.iam.shibboleth.passwordreset.support.email.EmailService;
 import org.opensaml.profile.context.ProfileRequestContext;
-import org.opensaml.storage.StorageService;
 import org.springframework.webflow.execution.Event;
 import org.springframework.webflow.execution.RequestContext;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
-import java.util.UUID;
 
 @Slf4j
 @AllArgsConstructor
