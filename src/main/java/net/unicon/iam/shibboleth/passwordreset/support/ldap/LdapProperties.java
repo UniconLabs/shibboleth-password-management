@@ -7,6 +7,11 @@ public class LdapProperties {
 
     private String url;
 
+    private String baseDn;
 
+    private String bindDn;
 
+    private String bindPassword;
+
+    private boolean useSsl;
 }
