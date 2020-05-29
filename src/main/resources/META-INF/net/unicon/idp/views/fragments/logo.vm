@@ -1,0 +1,1 @@
+<img src="$request.getContextPath()#springMessage('idp.logo')" alt="#springMessageText('idp.logo.alt-text', 'logo')" />

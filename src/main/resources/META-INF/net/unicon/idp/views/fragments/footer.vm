@@ -1,0 +1,5 @@
+<footer>
+    <div class="container container-footer">
+        <p class="footer-text">#springMessageText("idp.footer", "Insert your footer text here.")</p>
+    </div>
+</footer>

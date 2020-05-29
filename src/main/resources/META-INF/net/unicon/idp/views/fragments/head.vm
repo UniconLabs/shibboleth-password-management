@@ -1,0 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>#springMessageText("idp.resetpasswd.title", "Web Login Service") - #springMessageText("idp.userprefs.title.suffix", "Reset your password")</title>
+<link rel="stylesheet" type="text/css" href="$request.getContextPath()/css/main.css" />
+#parse('fragments/styles.vm')
