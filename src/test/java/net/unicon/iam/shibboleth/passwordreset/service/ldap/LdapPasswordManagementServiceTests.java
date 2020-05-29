@@ -17,7 +17,7 @@ public class LdapPasswordManagementServiceTests {
     private PasswordManagementService ldapPasswordManagementService;
 
     @Test
-    public void verifyingCorrectWiring() {
+    public void verifyCorrectWiring() {
         assertNotNull(ldapPasswordManagementService);
     }
 
