@@ -23,7 +23,7 @@ public class LdapPasswordManagementServiceTests {
 
 
     /**
-     * These integration tests require Ldap container with fixture data running
+     * These integration tests require Ldap Docker container with fixture data running
      */
     @Test
     public void verifySearchForEmail() {
