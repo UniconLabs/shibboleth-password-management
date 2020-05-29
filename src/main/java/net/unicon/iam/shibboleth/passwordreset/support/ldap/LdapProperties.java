@@ -13,5 +13,7 @@ public class LdapProperties {
 
     private String bindPassword;
 
+    private String searchFilter;
+
     private boolean useSsl;
 }
