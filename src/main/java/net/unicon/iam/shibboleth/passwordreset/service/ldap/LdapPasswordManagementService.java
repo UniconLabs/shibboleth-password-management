@@ -59,6 +59,7 @@ public class LdapPasswordManagementService implements PasswordManagementService 
         return false;
     }
 
+    //Package-private - friendly for unit testing
     String findDnFor(String username) {
         Optional<Response<SearchResult>> optionalResponse = findSearchResultFor(username, "mail");
         return optionalResponse
