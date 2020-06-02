@@ -2,7 +2,6 @@ package net.unicon.iam.shibboleth.passwordreset.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.unicon.iam.shibboleth.passwordreset.model.PasswordResetRequest;
 import org.opensaml.storage.StorageRecord;
 import org.opensaml.storage.StorageService;
 
@@ -22,7 +21,7 @@ public interface PasswordManagementService {
 
     String findUsernameBy(String resetToken);
 
-    boolean changePasswordFor(String username);
+    boolean resetPasswordFor(String username, String newPassword);
 
     String PASSWORD_RESET_CONTEXT = "passwordreset";
 
@@ -65,7 +64,7 @@ public interface PasswordManagementService {
         }
 
         @Override
-        public boolean changePasswordFor(String username) {
+        public boolean resetPasswordFor(String username, String newPassword) {
             return false;
         }
     }

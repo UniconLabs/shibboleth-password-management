@@ -6,13 +6,13 @@ import net.unicon.iam.shibboleth.passwordreset.service.PasswordManagementService
 import net.unicon.iam.shibboleth.passwordreset.support.ldap.LdapProperties;
 import net.unicon.iam.shibboleth.passwordreset.support.ldap.Ldaptive;
 import org.ldaptive.ConnectionFactory;
+import org.ldaptive.LdapAttribute;
 import org.ldaptive.Response;
 import org.ldaptive.SearchFilter;
 import org.ldaptive.SearchResult;
 import org.springframework.util.Assert;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -27,15 +27,16 @@ public class LdapPasswordManagementService implements PasswordManagementService 
     @Override
     public String findEmailAddressFor(String username) {
         Assert.notNull(username, "username cannot be null");
-        final String emailToReturn;
-
-        ConnectionFactory connFactory = Ldaptive.connectionFactoryOf(ldapProperties);
-        SearchFilter filter = Ldaptive.searchFilterOf(ldapProperties.getSearchFilter(), "user", List.of(username));
-        Optional<Response<SearchResult>> optionalResponse =
-                Ldaptive.executeSearchOperation(connFactory, ldapProperties.getBaseDn(), filter, "mail");
-
+        Optional<Response<SearchResult>> optionalResponse = findSearchResultFor(username, "mail");
         return optionalResponse
-                .map(r -> r.getResult().getEntry().getAttribute().getStringValue())
+                .map(r -> {
+                    LdapAttribute attr = r.getResult().getEntry().getAttribute();
+                    if (attr == null) {
+                        log.warn("Cannot find 'mail' attribute for [{}]", username);
+                        return null;
+                    }
+                    return attr.getStringValue();
+                })
                 .orElse(null);
     }
 
@@ -50,7 +51,24 @@ public class LdapPasswordManagementService implements PasswordManagementService 
     }
 
     @Override
-    public boolean changePasswordFor(String username) {
+    public boolean resetPasswordFor(String username, String newPassword) {
+        String dn = findDnFor(username);
+        if(dn == null) {
+            log.warn("The LDAP entry is not found for [{}]. Unable to reset password", username);
+        }
         return false;
+    }
+
+    String findDnFor(String username) {
+        Optional<Response<SearchResult>> optionalResponse = findSearchResultFor(username, "mail");
+        return optionalResponse
+                .map(r -> r.getResult().getEntry().getDn())
+                .orElse(null);
+    }
+
+    private Optional<Response<SearchResult>> findSearchResultFor(String username, String... returnAttributes) {
+        ConnectionFactory connFactory = Ldaptive.connectionFactoryOf(ldapProperties);
+        SearchFilter filter = Ldaptive.searchFilterOf(ldapProperties.getSearchFilter(), "user", List.of(username));
+        return Ldaptive.executeSearchOperation(connFactory, ldapProperties.getBaseDn(), filter, returnAttributes);
     }
 }
