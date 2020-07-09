@@ -29,10 +29,11 @@ public class SendPasswordResetInstructions extends AbstractProfileAction {
     protected Event doExecute(@Nonnull RequestContext springRequestContext,
                               @Nonnull ProfileRequestContext profileRequestContext) {
 
-        String username = "TODO:real_impl";
+
+        String username = springRequestContext.getRequestParameters().get("username");
         String emailAddress = this.passwordManagementService.findEmailAddressFor(username);
         if(emailAddress == null) {
-            log.error("Could not find password record for [username]");
+            log.error("Could not find password record for [{}]", username);
             return new Event(this, "error");
         }
         String resetUrl = this.passwordManagementService.generateResetUrlAndStoreResetTokenFor(username);

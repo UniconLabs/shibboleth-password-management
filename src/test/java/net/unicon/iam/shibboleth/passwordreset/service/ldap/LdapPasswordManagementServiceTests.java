@@ -1,6 +1,5 @@
 package net.unicon.iam.shibboleth.passwordreset.service.ldap;
 
-import net.unicon.iam.shibboleth.passwordreset.service.PasswordManagementService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
