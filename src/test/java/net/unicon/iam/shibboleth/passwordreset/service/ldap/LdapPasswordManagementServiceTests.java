@@ -9,7 +9,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * These integration tests require Ldap Docker container with fixture data running
+ * These integration tests require Ldap Docker container with fixture data running.
+ * Currently using 'directory' container from: https://github.com/UniconLabs/iam-learning-environment
  */
 @ContextConfiguration("/ldap-password-manager.xml")
 @ExtendWith(SpringExtension.class)
@@ -25,13 +26,13 @@ public class LdapPasswordManagementServiceTests {
 
     @Test
     public void verifySearchForEmail() {
-        String emailAddressForDimaInLdap = ldapPasswordManagementService.findEmailAddressFor("dima");
-        assertEquals("dima@gmail.com", emailAddressForDimaInLdap);
+        String emailAddressForDimaInLdap = ldapPasswordManagementService.findEmailAddressFor("banderson");
+        assertEquals("banderson@mail.com", emailAddressForDimaInLdap);
     }
 
     @Test
     public void verifyFindDn() {
-        String dn = ldapPasswordManagementService.findDnFor("dima");
-        assertEquals("uid=dima,ou=People,dc=example,dc=com", dn);
+        String dn = ldapPasswordManagementService.findDnFor("banderson");
+        assertEquals("uid=banderson,ou=People,dc=unicon,dc=local", dn);
     }
 }
