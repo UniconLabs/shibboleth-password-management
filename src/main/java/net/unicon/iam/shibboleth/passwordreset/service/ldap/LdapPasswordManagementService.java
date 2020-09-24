@@ -11,7 +11,6 @@ import org.ldaptive.LdapEntry;
 import org.ldaptive.Response;
 import org.ldaptive.SearchFilter;
 import org.ldaptive.SearchResult;
-import org.opensaml.storage.StorageService;
 import org.springframework.util.Assert;
 
 import java.util.List;
@@ -25,11 +24,10 @@ public class LdapPasswordManagementService extends BasePasswordManagementService
 
     private final LdapProperties ldapProperties;
 
-    //Is ConnectionFactory threead-safe?
+    //Is ConnectionFactory thread-safe?
     private final ConnectionFactory connectionFactory;
 
-    public LdapPasswordManagementService(LdapProperties ldapProperties, String resetBaseUrl, StorageService storageService) {
-        super(resetBaseUrl, storageService);
+    public LdapPasswordManagementService(LdapProperties ldapProperties) {
         this.ldapProperties = ldapProperties;
         this.connectionFactory = Ldaptive.connectionFactoryOf(ldapProperties);
     }
@@ -57,6 +55,7 @@ public class LdapPasswordManagementService extends BasePasswordManagementService
         String dn = findDnFor(username);
         if (dn == null) {
             log.warn("The LDAP entry is not found for [{}]. Unable to reset password", username);
+            return false;
         }
         return Ldaptive.executeGenericLdapPasswordResetOperation(connectionFactory, dn, newPassword);
     }

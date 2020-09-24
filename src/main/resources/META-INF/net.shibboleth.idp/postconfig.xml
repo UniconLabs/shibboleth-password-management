@@ -19,9 +19,9 @@
                   p:bindPassword="%{idp.passwordreset.ldap.bindPassword}"
                   p:searchFilter="%{idp.passwordreset.ldap.searchFilter}"/>
         </constructor-arg>
-        <constructor-arg index="1" value="%{idp.passwordreset.baseurl}"/>
-        <constructor-arg index="2" ref="shibboleth.StorageService"/>
-
     </bean>
+
+    <bean id="passwordreset.TokenRecordStorage"
+          class="net.unicon.iam.shibboleth.passwordreset.support.token.TokenRecordStorage$IN_MEMORY"/>
 
 </beans>

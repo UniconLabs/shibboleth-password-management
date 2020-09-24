@@ -1,42 +1,59 @@
 package net.unicon.iam.shibboleth.passwordreset.flow;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.shibboleth.idp.profile.AbstractProfileAction;
 import net.unicon.iam.shibboleth.passwordreset.service.PasswordManagementService;
 import net.unicon.iam.shibboleth.passwordreset.support.email.EmailProperties;
 import net.unicon.iam.shibboleth.passwordreset.support.email.EmailService;
+import net.unicon.iam.shibboleth.passwordreset.support.token.TokenRecordStorage;
 import org.opensaml.profile.context.ProfileRequestContext;
+import org.opensaml.storage.StorageService;
+import org.springframework.webflow.action.AbstractAction;
 import org.springframework.webflow.execution.Event;
 import org.springframework.webflow.execution.RequestContext;
 
 import javax.annotation.Nonnull;
 
 @Slf4j
-@AllArgsConstructor
-@NoArgsConstructor
-public class SendPasswordResetInstructions extends AbstractProfileAction {
+public class SendPasswordResetInstructions extends AbstractAction {
 
-    private EmailProperties emailProperties;
+    private final EmailProperties emailProperties;
 
-    private EmailService emailService;
+    private final EmailService emailService;
 
-    private PasswordManagementService passwordManagementService;
+    private final PasswordManagementService passwordManagementService;
+
+    private final String resetBaseUrl;
+
+    private final TokenRecordStorage tokenRecordStorage;
+
+    public SendPasswordResetInstructions(EmailProperties emailProperties,
+                                         EmailService emailService,
+                                         PasswordManagementService passwordManagementService,
+                                         String resetBaseUrl,
+                                         TokenRecordStorage tokenRecordStorage) {
+
+        this.emailProperties = emailProperties;
+        this.emailService = emailService;
+        this.passwordManagementService = passwordManagementService;
+        this.resetBaseUrl = resetBaseUrl;
+        this.tokenRecordStorage = tokenRecordStorage;
+    }
 
     @Nonnull
     @Override
-    protected Event doExecute(@Nonnull RequestContext springRequestContext,
-                              @Nonnull ProfileRequestContext profileRequestContext) {
-
-
-        String username = springRequestContext.getRequestParameters().get("username");
-        String emailAddress = this.passwordManagementService.findEmailAddressFor(username);
+    protected Event doExecute(@Nonnull RequestContext springRequestContext) {
+        var username = springRequestContext.getRequestParameters().get("username");
+        var emailAddress = this.passwordManagementService.findEmailAddressFor(username);
         if(emailAddress == null) {
             log.error("Could not find password record for [{}]", username);
             return new Event(this, "error");
         }
-        String resetUrl = this.passwordManagementService.generateResetUrlAndStoreResetTokenFor(username);
+        var token = this.passwordManagementService.generateResetTokenFor(username);
+        log.debug("Binding reset token [{}} to username [{}]", token, username);
+        tokenRecordStorage.bindTokenToUsername(token, username);
+        var resetUrl = String.format(resetBaseUrl + "%s", token);
+        log.debug("Generated reset URL: [{}]", resetUrl);
 
         if(this.emailService.send(this.emailProperties, emailAddress, String.format("Here is your reset URL: %s", resetUrl))) {
             return new Event(this, "success");
