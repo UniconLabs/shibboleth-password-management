@@ -1,31 +1,37 @@
 plugins {
     id 'java'
     id 'idea'
+    id 'io.freefair.lombok' version '5.3.0'
 }
+
+group '${project.group}'
+version '${project.version}'
+generateLombokConfig.enabled = false
 
 repositories {
     maven { url 'https://build.shibboleth.net/nexus/content/groups/public' }
-    jcenter()
+    mavenCentral()
 }
 
-dependencies {    
+dependencies {
     //Import BOMs
     implementation platform("net.shibboleth.idp:idp-bom:${project.'shibboleth.version'}")
-    implementation platform('org.junit:junit-bom:5.6.2')
+    implementation platform("org.junit:junit-bom:${project.'junit.jupiter.version'}")
 
-    implementation 'net.shibboleth.idp:idp-profile-api'
-    compileOnly 'ch.qos.logback:logback-core'
-    implementation 'javax.mail:javax.mail-api:1.6.2'
-    implementation 'org.ldaptive:ldaptive'
+    compileOnly "net.shibboleth.idp:idp-authn-api:${project.'shibboleth.version'}"
 
-    compileOnly 'org.projectlombok:lombok:1.18.12'
-    annotationProcessor 'org.projectlombok:lombok:1.18.12'
+    implementation "javax.mail:javax.mail-api:${project.'javax.mail.version'}"
+    implementation "org.ldaptive:ldaptive:${project.'ldaptive.version'}"
+    implementation "org.projectlombok:lombok:${project.'lombok.version'}"
+    implementation "org.springframework:spring-context-support:${project.'spring.version'}"
 
-    testCompileOnly 'org.projectlombok:lombok:1.18.12'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${project.'junit.jupiter.version'}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.'junit.jupiter.version'}"
+    testImplementation "org.springframework:spring-test:${project.'spring.version'}"
+    testImplementation "org.springframework:spring-beans:${project.'spring.version'}"
+    testImplementation "com.google.guava:guava:${project.'guava.version'}"
+    testImplementation "com.unboundid:unboundid-ldapsdk:${project.'unboundid.verion'}"
 
-    testCompile 'org.springframework:spring-test'
-    testCompile 'org.junit.jupiter:junit-jupiter'
 }
 
 test {
