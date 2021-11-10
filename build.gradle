@@ -25,12 +25,16 @@ dependencies {
     implementation "org.projectlombok:lombok:${project.'lombok.version'}"
     implementation "org.springframework:spring-context-support:${project.'spring.version'}"
 
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${project.'junit.jupiter.version'}"
+    testRuntimeOnly "javax.servlet:javax.servlet-api:4.0.1"
+    testRuntimeOnly "org.apache.commons:commons-lang3:3.11"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.'junit.jupiter.version'}"
-    testImplementation "org.springframework:spring-test:${project.'spring.version'}"
-    testImplementation "org.springframework:spring-beans:${project.'spring.version'}"
+    testRuntimeOnly "org.springframework:spring-webmvc:${project.'spring.version'}"
     testImplementation "com.google.guava:guava:${project.'guava.version'}"
     testImplementation "com.unboundid:unboundid-ldapsdk:${project.'unboundid.verion'}"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${project.'junit.jupiter.version'}"
+    testImplementation "org.mockito:mockito-core:3.12.4"
+    testImplementation "org.springframework:spring-beans:${project.'spring.version'}"
+    testImplementation "org.springframework:spring-test:${project.'spring.version'}"
 
 }
 

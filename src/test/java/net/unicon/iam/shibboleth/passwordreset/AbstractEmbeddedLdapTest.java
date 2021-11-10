@@ -1,4 +1,4 @@
-package net.unicon.iam.shibboleth.passwordreset.service.ldap;
+package net.unicon.iam.shibboleth.passwordreset;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
@@ -6,15 +6,11 @@ import com.unboundid.ldap.listener.InMemoryDirectoryServer;
 import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
 import com.unboundid.ldap.listener.InMemoryListenerConfig;
 import com.unboundid.ldap.sdk.LDAPException;
+import net.unicon.iam.shibboleth.passwordreset.service.LdapPasswordManagementService;
 import org.junit.jupiter.api.AfterEach;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.ldaptive.FilterTemplate;
-import org.ldaptive.SearchResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -25,20 +21,21 @@ import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-@ContextConfiguration("/ldap-password-manager.xml")
+/**
+ * Setup the basic embedded LDAP infrastructure to make testing password reset against a real LDAP possible
+ */
+@ContextConfiguration("/ldap-password-manager-testing.xml")
 @ExtendWith(SpringExtension.class)
-public class LdapPasswordManagementServiceTests {
-    @Autowired private LdapPasswordManagementService ldapPasswordManagementService;
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class AbstractEmbeddedLdapTest {
+    protected InetAddress bindAddress;
+    protected String bindDSN = "cn=admin,dc=unicon,dc=local";
+    protected String[] domainDsnArray = new String[] {"dc=unicon,dc=local"};
+    protected List<String> ldifs = new ArrayList<>();
+    protected InMemoryDirectoryServer testLdapServer;
 
-    private InetAddress bindAddress;
-    private String bindDSN = "cn=admin,dc=unicon,dc=local";
-    private String[] domainDsnArray = new String[] {"dc=unicon,dc=local"};
-    private List<String> ldifs = new ArrayList<>();
-    private InMemoryDirectoryServer testLdapServer;
-
-    public LdapPasswordManagementServiceTests() {
+    public AbstractEmbeddedLdapTest() {
         ldifs.add("testusers.ldif");
         try {
             this.bindAddress = InetAddress.getByName("127.0.0.1");
@@ -58,43 +55,7 @@ public class LdapPasswordManagementServiceTests {
         testLdapServer.shutDown(true);
     }
 
-    @Test
-    public void validateChangePassword() throws LDAPException {
-        Optional<SearchResponse> originalPass = ldapPasswordManagementService.findSearchResultFor("banderson", "userPassword");
-        assertEquals("password", originalPass.map(r -> r.getEntry().getAttribute("userPassword").getStringValue()).orElse(null));
-
-        boolean passwordChanged = ldapPasswordManagementService.resetPasswordFor("banderson", "foobar");
-        assertTrue(passwordChanged);
-
-        Optional<SearchResponse> updatedPass = ldapPasswordManagementService.findSearchResultFor("banderson", "userPassword");
-        assertEquals("foobar", updatedPass.map(r -> r.getEntry().getAttribute("userPassword").getStringValue()).orElse(null));
-    }
-
-    @Test
-    public void verifyCreateSearchFilter() throws LDAPException {
-        FilterTemplate searchFilter = ldapPasswordManagementService.buildFilter("(uid={user})", "user", List.of("kwhite"));
-        String format = searchFilter.format();
-        assertEquals("(uid=kwhite)", format);
-    }
-
-    @Test
-    public void verifyCorrectWiring() {
-        assertNotNull(ldapPasswordManagementService);
-    }
-
-    @Test
-    public void verifyFindDn() throws LDAPException {
-        String dn = ldapPasswordManagementService.findDnFor("banderson");
-        assertEquals("uid=banderson,ou=People,dc=unicon,dc=local", dn);
-    }
-
-    @Test
-    public void verifySearchForEmail() throws LDAPException {
-        String emailFromLdap = ldapPasswordManagementService.findEmailAddressFor("banderson");
-        assertEquals("banderson@mail.com", emailFromLdap);
-    }
-
-    private InMemoryDirectoryServerConfig createInMemoryServerConfiguration() {
+    protected InMemoryDirectoryServerConfig createInMemoryServerConfiguration() {
         try {
             final InMemoryDirectoryServerConfig inMemoryDirectoryServerConfig = new InMemoryDirectoryServerConfig(domainDsnArray);
             inMemoryDirectoryServerConfig.addAdditionalBindCredentials(bindDSN, "admin");
@@ -108,7 +69,7 @@ public class LdapPasswordManagementServiceTests {
         }
     }
 
-    private InMemoryDirectoryServer createServer() throws LDAPException {
+    protected InMemoryDirectoryServer createServer() throws LDAPException {
         final InMemoryDirectoryServer ldapServer = new InMemoryDirectoryServer(createInMemoryServerConfiguration());
         for (final String ldif : ldifs) {
             try {

@@ -9,26 +9,39 @@ import java.util.UUID;
  * manage reset attempts, store and retrieve data associated with password transactions for different subjects,
  * generate, validate and manage password reset tokens.
  */
-public interface PasswordManagementService {
+public interface IPasswordManagementService {
+
+    void clearToken(String token);
 
     String findEmailAddressFor(String username);
+
+    String findUsernameBoundToToken(String token);
 
     String generateResetTokenFor(String username);
 
     boolean resetPasswordFor(String username, String newPassword);
 
+    boolean sendPasswordResetEmail(String username, String emailAddress);
 
+    boolean userExists(String username);
 
     @AllArgsConstructor
     @Slf4j
-    class MOCK_IMPL implements PasswordManagementService {
-
+    class MOCK_IMPL implements IPasswordManagementService {
         private final String resetBaseUrl;
 
+        @Override
+        public void clearToken(String token) {
+        }
 
         @Override
         public String findEmailAddressFor(String username) {
             return "email@gmail.com";
+        }
+
+        @Override
+        public String findUsernameBoundToToken(String token) {
+            return null;
         }
 
         @Override
@@ -38,6 +51,16 @@ public interface PasswordManagementService {
 
         @Override
         public boolean resetPasswordFor(String username, String newPassword) {
+            return false;
+        }
+
+        @Override
+        public boolean sendPasswordResetEmail(String username, String emailAddress) {
+            return false;
+        }
+
+        @Override
+        public boolean userExists(String username) {
             return false;
         }
     }
