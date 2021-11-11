@@ -20,6 +20,7 @@ dependencies {
 
     compileOnly "net.shibboleth.idp:idp-authn-api:${project.'shibboleth.version'}"
 
+    implementation "com.fasterxml.jackson.core:jackson-databind:${project.'jackson.version'}"
     implementation "javax.mail:javax.mail-api:${project.'javax.mail.version'}"
     implementation "org.ldaptive:ldaptive:${project.'ldaptive.version'}"
     implementation "org.projectlombok:lombok:${project.'lombok.version'}"
@@ -35,6 +36,7 @@ dependencies {
     testImplementation "org.mockito:mockito-core:3.12.4"
     testImplementation "org.springframework:spring-beans:${project.'spring.version'}"
     testImplementation "org.springframework:spring-test:${project.'spring.version'}"
+    testImplementation "org.springframework:spring-web:${project.'spring.version'}"
 
 }
 

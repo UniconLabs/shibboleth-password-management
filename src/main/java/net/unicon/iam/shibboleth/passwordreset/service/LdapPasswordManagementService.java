@@ -120,7 +120,7 @@ public class LdapPasswordManagementService extends AbstractPasswordManagementSer
                 .orElse(null);
     }
 
-    Optional<SearchResponse> findSearchResultFor(String username, String... returnAttributes) {
+    protected Optional<SearchResponse> findSearchResultFor(String username, String... returnAttributes) {
         FilterTemplate filter = buildFilter(ldapProperties.getSearchFilter(), "user", List.of(username));
         return executeSearchOperation(ldapProperties.getBaseDn(), filter, returnAttributes);
     }

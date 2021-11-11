@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.webflow.execution.Event;
 
 import java.util.Map;
 
@@ -46,33 +45,36 @@ public class PasswordResetController {
 
     /**
      * @param token the generated token value
-     * @param requestParams the password and confirmation password (must match)
+     * @param body the password and confirmation password (must match)
      * @return 404 NOT_FOUND if the token does not produce a username
      *         400 BAD_REQUEST if the password or passwordConfirm values supplied are empty(null) or do not match
      *         204 NO_CONTENT if the password is updated successfully
      *
      */
     @PatchMapping(path = "/{token}")
-    public ResponseEntity<?> resetPassword(@PathVariable String token, @RequestBody Map<String, String> requestParams) {
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, Object> body, @PathVariable String token) {
         String tokenUser = passwordManagementService.findUsernameBoundToToken(token);
+        passwordManagementService.clearToken(token); // Always remove
         if (StringUtils.isEmpty(tokenUser)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No match for token = [" + token + "] found");
         }
 
-        String password = requestParams.get("password");
-        String confirmedPassword = requestParams.get("confirmedPassword");
+        String password = body.get("password").toString();
+        String confirmedPassword = body.get("confirmedPassword").toString();
         if(StringUtils.isEmpty(password) || StringUtils.isEmpty(confirmedPassword)) {
             log.error("New password value and confirmed password value must not be empty");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Neither the new password nor the confirmed value may be empty");
         }
+
         if (!password.equals(confirmedPassword)) {
             log.error("New password value does not match confirmed password value");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("The new password and the confirmed password must match");
         }
+
         if (passwordManagementService.resetPasswordFor(tokenUser, password)) {
-            passwordManagementService.clearToken(token);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Succesfully changed password for user [" + tokenUser + "]");
         }
+
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to change password for user [" + tokenUser + "]");
     }
 }

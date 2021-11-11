@@ -17,6 +17,9 @@ public interface TokenRecordStorage {
 
     void removeTokenRecord(String token);
 
+    /**
+     * This is a default, basic implementation, but is NOT reccomended for production use.
+     */
     class IN_MEMORY implements TokenRecordStorage {
         protected Map<String, String> map = new ConcurrentHashMap<>();
 
