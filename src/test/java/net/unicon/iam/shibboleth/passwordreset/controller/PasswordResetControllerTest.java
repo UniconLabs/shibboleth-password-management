@@ -2,8 +2,6 @@ package net.unicon.iam.shibboleth.passwordreset.controller;
 
 import net.unicon.iam.shibboleth.passwordreset.AbstractEmbeddedLdapTest;
 import net.unicon.iam.shibboleth.passwordreset.service.LdapPasswordManagementService;
-import net.unicon.iam.shibboleth.passwordreset.support.email.EmailProperties;
-import net.unicon.iam.shibboleth.passwordreset.support.email.EmailService;
 import net.unicon.iam.shibboleth.passwordreset.support.ldap.LdapProperties;
 import net.unicon.iam.shibboleth.passwordreset.support.token.TokenRecordStorage;
 import org.junit.jupiter.api.Assertions;
@@ -11,7 +9,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.ldaptive.SearchResponse;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -20,19 +17,14 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.HashMap;
 import java.util.Optional;
 
-import static org.mockito.Mockito.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class PasswordResetControllerTest extends AbstractEmbeddedLdapTest {
     @Autowired
-    private EmailProperties emailProperties;
-
-    @Autowired
     private TestingLdapPasswordManagementService passwordManagementService;
 
-    private EmailService emailService;
     private MockMvc mockMvc;
     private TestingTRS tokenRecordStorage = new TestingTRS();
 
@@ -44,9 +36,6 @@ public class PasswordResetControllerTest extends AbstractEmbeddedLdapTest {
     @BeforeAll
     public void setup() {
         PasswordResetController controller = new PasswordResetController();
-        emailService = Mockito.mock(EmailService.class);
-        passwordManagementService.setEmailService(emailService);
-        passwordManagementService.setEmailProperties(emailProperties);
         passwordManagementService.setTokenRecordStorage(tokenRecordStorage);
         controller.passwordManagementService = passwordManagementService;
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
@@ -55,30 +44,24 @@ public class PasswordResetControllerTest extends AbstractEmbeddedLdapTest {
     @Test
     public void test_initiateResetForUser() throws Exception {
         // easy path
-        Mockito.when(emailService.send(eq(emailProperties), eq("banderson@mail.com"), Mockito.anyString())).thenReturn(true);
         var result =  mockMvc.perform(post("/api/passwordReset/initiateResetForUser/banderson"));
         result.andExpect(status().isOk());
         Assertions.assertEquals(1, tokenRecordStorage.getTokenCount(), "Should be exactly one token");
+        String token = result.andReturn().getResponse().getContentAsString();
+        Assertions.assertTrue(token.equals(tokenRecordStorage.getSingleToken()));
 
         // no username match
+        tokenRecordStorage.clear();
         result = mockMvc.perform(post("/api/passwordReset/initiateResetForUser/randomnamenotinldap"));
         result.andExpect(status().isNotFound());
-        Assertions.assertEquals(1, tokenRecordStorage.getTokenCount(), "Should be exactly one token");
-
-        // no email for user
-        result = mockMvc.perform(post("/api/passwordReset/initiateResetForUser/jsmith"));
-        result.andExpect(status().isNotFound());
-        Assertions.assertEquals(1, tokenRecordStorage.getTokenCount(), "Should be exactly one token");
+        Assertions.assertEquals(0, tokenRecordStorage.getTokenCount(), "Should be no token");
 
         // re-request for banderson and ensure only a single token exists
         result =  mockMvc.perform(post("/api/passwordReset/initiateResetForUser/banderson"));
         result.andExpect(status().isOk());
         Assertions.assertEquals(1, tokenRecordStorage.getTokenCount(), "Should be exactly one token");
-
-        // email failed for whatever reason
-        Mockito.when(emailService.send(eq(emailProperties), eq("banderson@mail.com"), Mockito.anyString())).thenReturn(false);
         result =  mockMvc.perform(post("/api/passwordReset/initiateResetForUser/banderson"));
-        result.andExpect(status().is5xxServerError());
+        result.andExpect(status().isOk());
         Assertions.assertEquals(1, tokenRecordStorage.getTokenCount(), "Should be exactly one token");
     }
 
@@ -91,7 +74,6 @@ public class PasswordResetControllerTest extends AbstractEmbeddedLdapTest {
         Assertions.assertEquals(0, tokenRecordStorage.getTokenCount(), "Should be exactly no tokens");
 
         // Standard good path
-        Mockito.when(emailService.send(eq(emailProperties), eq("banderson@mail.com"), Mockito.anyString())).thenReturn(true);
         mockMvc.perform(post("/api/passwordReset/initiateResetForUser/banderson"));
         Assertions.assertEquals(1, tokenRecordStorage.getTokenCount(), "Should be exactly one token");
         Assertions.assertEquals("password", passwordManagementService.findUserPassword("banderson"), "initial password not correct");
@@ -109,6 +91,12 @@ public class PasswordResetControllerTest extends AbstractEmbeddedLdapTest {
 
         token = tokenRecordStorage.getSingleToken();
         jsonBody = "{ \"password\" : \"newpassword2\", \"confirmedPassword\" : \"notamatch\" }";
+        result = mockMvc.perform(patch("/api/passwordReset/"+token).contentType(MediaType.APPLICATION_JSON).content(jsonBody));
+        result.andExpect(status().isBadRequest());
+        Assertions.assertEquals(0, tokenRecordStorage.getTokenCount(), "Should be exactly no tokens");
+        Assertions.assertEquals("newpassword2", passwordManagementService.findUserPassword("banderson"), "password not correct");
+
+        jsonBody = "{ \"password\" : \"\"";
         result = mockMvc.perform(patch("/api/passwordReset/"+token).contentType(MediaType.APPLICATION_JSON).content(jsonBody));
         result.andExpect(status().isBadRequest());
         Assertions.assertEquals(0, tokenRecordStorage.getTokenCount(), "Should be exactly no tokens");

@@ -23,24 +23,19 @@ public class PasswordResetController {
     IPasswordManagementService passwordManagementService;
 
     /**
+     * Return the generated token for the user
      * @param username The username to act upon
-     * @return 404 NOTFOUND if the username is not found or doesn't produce an email address on lookup
-     *         200 OK if the email was reset email was sent
-     *         500 INTERNAL_SERVER_ERROR if there was an issue trying to send the email
+     * @return 404 NOTFOUND if the username is not found
+     *         200 OK if the token was generated for the user (return body is the token)
      */
     @PostMapping(path = "/initiateResetForUser/{username}")
     public ResponseEntity<?> initiatePasswordReset(@PathVariable String username) {
         if (!passwordManagementService.userExists(username)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No user found with username = [" + username + "]");
         }
-        String emailAddress = passwordManagementService.findEmailAddressFor(username);
-        if (StringUtils.isEmpty(emailAddress)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No email found for user [" + username + "]");
-        }
-        if (passwordManagementService.sendPasswordResetEmail(username, emailAddress)) {
-            return ResponseEntity.status(HttpStatus.OK).body("Email instructions to reset password sent to user [" + username + "]");
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to send email at this time to user [" + username + "], please try again later");
+
+        String token = passwordManagementService.generateResetTokenFor(username);
+        return ResponseEntity.status(HttpStatus.OK).body(token);
     }
 
     /**

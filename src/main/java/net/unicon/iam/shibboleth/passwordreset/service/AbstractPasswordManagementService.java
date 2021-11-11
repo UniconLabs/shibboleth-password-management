@@ -5,8 +5,6 @@ import net.unicon.iam.shibboleth.passwordreset.support.email.EmailProperties;
 import net.unicon.iam.shibboleth.passwordreset.support.email.EmailService;
 import net.unicon.iam.shibboleth.passwordreset.support.token.TokenRecordStorage;
 
-import java.util.UUID;
-
 /**
  * Provides common functionality.
  */
@@ -24,7 +22,7 @@ public abstract class AbstractPasswordManagementService implements IPasswordMana
 
     @Override
     public String generateResetTokenFor(String username) {
-        return UUID.randomUUID().toString();
+        return tokenRecordStorage.generateTokenFor(username);
     }
 
     public void setBaseUrl(String url) {

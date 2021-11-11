@@ -11,7 +11,6 @@ import org.ldaptive.FilterTemplate;
 import org.ldaptive.LdapAttribute;
 import org.ldaptive.LdapEntry;
 import org.ldaptive.LdapException;
-import static org.ldaptive.ResultCode.SUCCESS;
 import org.ldaptive.SearchOperation;
 import org.ldaptive.SearchRequest;
 import org.ldaptive.SearchResponse;
@@ -26,6 +25,8 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
+
+import static org.ldaptive.ResultCode.SUCCESS;
 
 /**
  * Implementation of {@link IPasswordManagementService} for LDAP directory backend.
@@ -150,8 +151,8 @@ public class LdapPasswordManagementService extends AbstractPasswordManagementSer
         boolean emailSent = this.emailService.send(this.emailProperties, emailAddress, String.format("Here is your reset URL: %s", resetUrl));
         if (emailSent) {
             log.debug("Binding reset token [{}} to username [{}]", token, username);
-            tokenRecordStorage.bindTokenToUsername(token, username);
         } else {
+            tokenRecordStorage.removeTokenRecord(token);
             log.error("Unable to send email to [{}]", emailAddress);
         }
         return emailSent;

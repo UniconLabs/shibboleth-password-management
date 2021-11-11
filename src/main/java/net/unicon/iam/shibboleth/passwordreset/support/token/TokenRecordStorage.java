@@ -1,6 +1,7 @@
 package net.unicon.iam.shibboleth.passwordreset.support.token;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -17,8 +18,14 @@ public interface TokenRecordStorage {
 
     void removeTokenRecord(String token);
 
+    default String generateTokenFor(String username) {
+        String token = UUID.randomUUID().toString();
+        bindTokenToUsername(token, username);
+        return token;
+    }
+
     /**
-     * This is a default, basic implementation, but is NOT reccomended for production use.
+     * This is a default, basic implementation, but is NOT recommended for production use.
      */
     class IN_MEMORY implements TokenRecordStorage {
         protected Map<String, String> map = new ConcurrentHashMap<>();
@@ -26,9 +33,9 @@ public interface TokenRecordStorage {
         @Override
         public void bindTokenToUsername(String token, String username) {
             AtomicReference<String> removeKey = new AtomicReference<>("");
-            map.entrySet().forEach(entry -> {
-                if (entry.getValue().equals(username)) {
-                    removeKey.set(entry.getKey());
+            map.forEach((key, value) -> {
+                if (value.equals(username)) {
+                    removeKey.set(key);
                 }
             });
             map.remove(removeKey.get());
