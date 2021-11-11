@@ -31,7 +31,7 @@ dependencies {
     testRuntimeOnly "org.springframework:spring-webmvc:${project.'spring.version'}"
     testImplementation "com.google.guava:guava:${project.'guava.version'}"
     testImplementation "com.unboundid:unboundid-ldapsdk:${project.'unboundid.verion'}"
-    testImplementation "javax.servlet:javax.servlet-api:${project.'servlet.verion'}"
+    testImplementation "javax.servlet:javax.servlet-api:${project.'servlet.version'}"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${project.'junit.jupiter.version'}"
 //    testImplementation "org.mockito:mockito-core:3.12.4"
     testImplementation "org.springframework:spring-beans:${project.'spring.version'}"

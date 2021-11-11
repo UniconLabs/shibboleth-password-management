@@ -25,44 +25,4 @@ public interface IPasswordManagementService {
 
     boolean userExists(String username);
 
-    @AllArgsConstructor
-    @Slf4j
-    class MOCK_IMPL implements IPasswordManagementService {
-        private final String resetBaseUrl;
-
-        @Override
-        public void clearToken(String token) {
-        }
-
-        @Override
-        public String findEmailAddressFor(String username) {
-            return "email@gmail.com";
-        }
-
-        @Override
-        public String findUsernameBoundToToken(String token) {
-            return null;
-        }
-
-        @Override
-        public String generateResetTokenFor(String username) {
-            return UUID.randomUUID().toString();
-        }
-
-        @Override
-        public boolean resetPasswordFor(String username, String newPassword) {
-            return false;
-        }
-
-        @Override
-        public boolean sendPasswordResetEmail(String username, String emailAddress) {
-            return false;
-        }
-
-        @Override
-        public boolean userExists(String username) {
-            return false;
-        }
-    }
-
 }
