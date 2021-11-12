@@ -24,7 +24,20 @@ dependencies {
     implementation "javax.mail:javax.mail-api:${project.'javax.mail.version'}"
     implementation "org.ldaptive:ldaptive:${project.'ldaptive.version'}"
     implementation "org.projectlombok:lombok:${project.'lombok.version'}"
+    implementation "org.springframework:spring-orm:${project.'spring.version'}"
     implementation "org.springframework:spring-context-support:${project.'spring.version'}"
+    implementation "org.springframework.data:spring-data-jpa:${project.'spring-data.version'}"
+
+    // Database support
+    compile "com.h2database:h2:1.4.200"
+    runtimeOnly "org.postgresql:postgresql:42.2.20"
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client:2.2.0'
+    runtimeOnly 'mysql:mysql-connector-java:5.1.48'
+
+    // hibernate deps
+    ['hibernate-core'].each {
+        compile "org.hibernate:${it}:${project.'hibernate.version'}"
+    }
 
     testRuntimeOnly "org.apache.commons:commons-lang3:${project.'commons-lang3.version'}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.'junit.jupiter.version'}"
@@ -37,7 +50,7 @@ dependencies {
     testImplementation "org.springframework:spring-beans:${project.'spring.version'}"
     testImplementation "org.springframework:spring-test:${project.'spring.version'}"
     testImplementation "org.springframework:spring-web:${project.'spring.version'}"
-
+    testImplementation "org.springframework.boot:spring-boot-test-autoconfigure:2.4.2"
 }
 
 test {
