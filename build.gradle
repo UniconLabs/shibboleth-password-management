@@ -2,10 +2,10 @@ plugins {
     id 'java'
     id 'idea'
     id 'io.freefair.lombok' version '5.3.0'
+    id 'distribution'
+    id 'signing'
 }
 
-group '${project.group}'
-version '${project.version}'
 generateLombokConfig.enabled = false
 
 repositories {
@@ -16,9 +16,10 @@ repositories {
 dependencies {
     //Import BOMs
     implementation platform("net.shibboleth.idp:idp-bom:${project.'shibboleth.version'}")
-    implementation platform("org.junit:junit-bom:${project.'junit.jupiter.version'}")
+    testImplementation platform("org.junit:junit-bom:${project.'junit.jupiter.version'}")
 
     compileOnly "net.shibboleth.idp:idp-authn-api:${project.'shibboleth.version'}"
+    compileOnly "net.shibboleth.idp:idp-admin-api:${project.'shibboleth.version'}"
 
     implementation "com.fasterxml.jackson.core:jackson-databind:${project.'jackson.version'}"
     implementation "javax.mail:javax.mail-api:${project.'javax.mail.version'}"
@@ -29,14 +30,14 @@ dependencies {
     implementation "org.springframework.data:spring-data-jpa:${project.'spring-data.version'}"
 
     // Database support
-    compile "com.h2database:h2:1.4.200"
-    runtimeOnly "org.postgresql:postgresql:42.2.20"
-    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client:2.2.0'
-    runtimeOnly 'mysql:mysql-connector-java:5.1.48'
+    compile "com.h2database:h2:${project.'h2.version'}"
+    runtimeOnly "org.postgresql:postgresql:${project.'postgres.version'}"
+    runtimeOnly "org.mariadb.jdbc:mariadb-java-client:${project.'mariadb.version'}"
+    runtimeOnly "mysql:mysql-connector-java:${project.'mysql.version'}"
 
     // hibernate deps
     ['hibernate-core'].each {
-        compile "org.hibernate:${it}:${project.'hibernate.version'}"
+        implementation "org.hibernate:${it}:${project.'hibernate.version'}"
     }
 
     testRuntimeOnly "org.apache.commons:commons-lang3:${project.'commons-lang3.version'}"
@@ -50,9 +51,76 @@ dependencies {
     testImplementation "org.springframework:spring-beans:${project.'spring.version'}"
     testImplementation "org.springframework:spring-test:${project.'spring.version'}"
     testImplementation "org.springframework:spring-web:${project.'spring.version'}"
-    testImplementation "org.springframework.boot:spring-boot-test-autoconfigure:2.4.2"
+    testImplementation "org.springframework.boot:spring-boot-test-autoconfigure:${project.'springboot.version'}"
 }
 
 test {
     useJUnitPlatform()
+}
+
+processResources {
+    from ('src/main/java') {
+        include "**/*.properties"
+    }
+}
+
+clean {
+    delete (layout.projectDirectory.dir("src/dist/bootstrap/plugin.properties"))
+    delete fileTree(layout.projectDirectory.dir("src/dist/webapp/WEB-INF/lib")) {
+        include "**/*.jar"
+    }
+}
+
+jar {
+    manifest {
+        attributes "Name": "net/unicon/iam/shibboleth/passwordreset/plugin/",
+                "Implementation-Vendor": "unicon.net",
+                "Implementation-Version": "${project.version}",
+                "Implementation-Title": "${project.name}"
+
+    }
+}
+jar.finalizedBy("buildPluginArtifacts")
+
+task buildPluginArtifacts(type: GradleBuild) {
+    group 'Build'
+    description 'Build the deployable artifacts for the plugin'
+
+    copy {
+        from layout.projectDirectory.dir("src/main/java/net/unicon/iam/shibboleth/passwordreset/plugin/plugin.properties")
+        into layout.projectDirectory.dir("src/dist/bootstrap")
+    }
+    copy {
+        from layout.buildDirectory.dir("libs/${project.name}-${project.version}.jar")
+        into layout.projectDirectory.dir("src/dist/webapp/WEB-INF/lib")
+    }
+    copy {
+        from { project.configurations.runtimeClasspath }
+        into ('src/dist/webapp/WEB-INF/lib')
+    }
+    finalizedBy distTar {
+        archivesBaseName = "${project.name}"
+        archiveExtension = 'tar.gz'
+        compression = Compression.GZIP
+
+        from layout.projectDirectory.dir("src/dist/")
+        exclude "**/.gitkeep"
+        exclude "/${project.name}-${project.version}"
+        finalizedBy distZip {
+            archivesBaseName = "${project.name}"
+
+            from layout.projectDirectory.dir("src/dist/")
+            exclude "**/.gitkeep"
+            exclude "/${project.name}-${project.version}"
+        }
+    }
+}
+
+artifacts {
+    archives layout.buildDirectory.dir("distributions/${project.name}-${project.version}.zip")
+    archives layout.buildDirectory.dir("distributions/${project.name}-${project.version}.tar.gz")
+}
+
+signing {
+    sign configurations.archives
 }
