@@ -1,23 +1,22 @@
 package net.unicon.iam.shibboleth.passwordreset.flow;
 
 import lombok.extern.slf4j.Slf4j;
-import net.unicon.iam.shibboleth.passwordreset.service.PasswordManagementService;
+import net.unicon.iam.shibboleth.passwordreset.service.IPasswordManagementService;
 import org.springframework.util.StringUtils;
 import org.springframework.webflow.action.AbstractAction;
 import org.springframework.webflow.execution.Event;
 import org.springframework.webflow.execution.RequestContext;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
 @Slf4j
 public class PerformPasswordReset extends AbstractAction {
 
-    private PasswordManagementService passwordManagementService;
+    private IPasswordManagementService passwordManagementService;
 
-    public PerformPasswordReset(PasswordManagementService passwordManagementService) {
+    public PerformPasswordReset(IPasswordManagementService passwordManagementService) {
         this.passwordManagementService = passwordManagementService;
     }
 
