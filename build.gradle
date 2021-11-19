@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'idea'
     id 'io.freefair.lombok' version '5.3.0'
+    id 'groovy'
     id 'distribution'
     id 'signing'
 }
@@ -13,114 +14,74 @@ repositories {
     mavenCentral()
 }
 
+project.ext.config = new ConfigSlurper().parse(new URL("https://raw.githubusercontent.com/UniconLabs/shibboleth-plugin-parent/develop/config.groovy"))
+
 dependencies {
     //Import BOMs
-    implementation platform("net.shibboleth.idp:idp-bom:${project.'shibboleth.version'}")
+    implementation platform("net.shibboleth.idp:idp-bom:$config.common.shibboleth.version")
     testImplementation platform("org.junit:junit-bom:${project.'junit.jupiter.version'}")
 
-    compileOnly "net.shibboleth.idp:idp-authn-api:${project.'shibboleth.version'}"
-    compileOnly "net.shibboleth.idp:idp-admin-api:${project.'shibboleth.version'}"
+    compileOnly "net.shibboleth.idp:idp-authn-api:$config.common.shibboleth.version"
+    compileOnly "net.shibboleth.idp:idp-admin-api:$config.common.shibboleth.version"
+    compileOnly "org.springframework:spring-tx:$config.common.spring.version"
 
-    implementation "com.fasterxml.jackson.core:jackson-databind:${project.'jackson.version'}"
     implementation "javax.mail:javax.mail-api:${project.'javax.mail.version'}"
-    implementation "org.ldaptive:ldaptive:${project.'ldaptive.version'}"
-    implementation "org.projectlombok:lombok:${project.'lombok.version'}"
-    implementation "org.springframework:spring-orm:${project.'spring.version'}"
-    implementation "org.springframework:spring-context-support:${project.'spring.version'}"
-    implementation "org.springframework.data:spring-data-jpa:${project.'spring-data.version'}"
+    implementation "org.projectlombok:lombok:$config.common.lombok.version"
+
+    implementation "org.springframework:spring-context-support:$config.common.spring.version", {
+        exclude module: "spring-context"
+        exclude module: "spring-core"
+        exclude module: "spring-beans"
+    }
+    implementation "org.springframework.data:spring-data-jpa:$config.common.springdata.version", {
+        exclude module: "spring-orm"
+        exclude module: "spring-aop"
+        exclude module: "spring-core"
+        exclude module: "spring-beans"
+        exclude module: "spring-context"
+        exclude module: "spring-tx"
+        exclude module: "slf4j-api"
+    }
 
     // Database support
-    compile "com.h2database:h2:${project.'h2.version'}"
-    runtimeOnly "org.postgresql:postgresql:${project.'postgres.version'}"
-    runtimeOnly "org.mariadb.jdbc:mariadb-java-client:${project.'mariadb.version'}"
-    runtimeOnly "mysql:mysql-connector-java:${project.'mysql.version'}"
+    compile "com.h2database:h2:$config.common.h2.version"
+    runtimeOnly "org.postgresql:postgresql:$config.common.postgres.version", {
+        exclude module: 'checker-qual'
+    }
+    runtimeOnly "org.mariadb.jdbc:mariadb-java-client:$config.common.mariadb.version"
+    runtimeOnly "mysql:mysql-connector-java:$config.common.mysql.version"
 
     // hibernate deps
     ['hibernate-core'].each {
-        implementation "org.hibernate:${it}:${project.'hibernate.version'}"
+        compileOnly "org.hibernate:${it}:$config.common.hibernate.version"
     }
 
-    testRuntimeOnly "org.apache.commons:commons-lang3:${project.'commons-lang3.version'}"
+    testRuntimeOnly "org.apache.commons:commons-lang3:$config.common.commonslang3.version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.'junit.jupiter.version'}"
-    testRuntimeOnly "org.springframework:spring-webmvc:${project.'spring.version'}"
-    testImplementation "com.google.guava:guava:${project.'guava.version'}"
-    testImplementation "com.unboundid:unboundid-ldapsdk:${project.'unboundid.verion'}"
-    testImplementation "javax.servlet:javax.servlet-api:${project.'servlet.version'}"
+    testRuntimeOnly "org.springframework:spring-webmvc:$config.common.spring.version"
+    testImplementation "com.fasterxml.jackson.core:jackson-databind:$config.common.jackson.version"
+    testImplementation "com.google.guava:guava:$config.common.guava.version"
+    testImplementation "com.unboundid:unboundid-ldapsdk:$config.common.unboundid.version"
+    testImplementation "javax.servlet:javax.servlet-api:$config.common.servlet.version"
+    testImplementation "org.hibernate:hibernate-core:$config.common.hibernate.version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${project.'junit.jupiter.version'}"
+    testImplementation "org.ldaptive:ldaptive:$config.common.ldaptive.version"
 //    testImplementation "org.mockito:mockito-core:3.12.4"
-    testImplementation "org.springframework:spring-beans:${project.'spring.version'}"
-    testImplementation "org.springframework:spring-test:${project.'spring.version'}"
-    testImplementation "org.springframework:spring-web:${project.'spring.version'}"
-    testImplementation "org.springframework.boot:spring-boot-test-autoconfigure:${project.'springboot.version'}"
+
+    testImplementation "org.springframework:spring-aop:$config.common.spring.version"
+    testImplementation "org.springframework:spring-beans:$config.common.spring.version"
+    testImplementation "org.springframework:spring-context:$config.common.spring.version"
+    testImplementation "org.springframework:spring-core:$config.common.spring.version"
+    testImplementation "org.springframework:spring-orm:$config.common.spring.version"
+    testImplementation "org.springframework:spring-test:$config.common.spring.version"
+    testImplementation "org.springframework:spring-tx:$config.common.spring.version"
+    testImplementation "org.springframework:spring-web:$config.common.spring.version"
+    testImplementation "org.springframework.boot:spring-boot-test-autoconfigure:$config.common.springboot.version"
+    testImplementation "org.slf4j:slf4j-api:$config.common.slf4j.version"
 }
+
+apply from: 'https://raw.githubusercontent.com/UniconLabs/shibboleth-plugin-parent/develop/build.gradle'
 
 test {
     useJUnitPlatform()
-}
-
-processResources {
-    from ('src/main/java') {
-        include "**/*.properties"
-    }
-}
-
-clean {
-    delete (layout.projectDirectory.dir("src/dist/bootstrap/plugin.properties"))
-    delete fileTree(layout.projectDirectory.dir("src/dist/webapp/WEB-INF/lib")) {
-        include "**/*.jar"
-    }
-}
-
-jar {
-    manifest {
-        attributes "Name": "net/unicon/iam/shibboleth/passwordreset/plugin/",
-                "Implementation-Vendor": "unicon.net",
-                "Implementation-Version": "${project.version}",
-                "Implementation-Title": "${project.name}"
-
-    }
-}
-jar.finalizedBy("buildPluginArtifacts")
-
-task buildPluginArtifacts(type: GradleBuild) {
-    group 'Build'
-    description 'Build the deployable artifacts for the plugin'
-
-    copy {
-        from layout.projectDirectory.dir("src/main/java/net/unicon/iam/shibboleth/passwordreset/plugin/plugin.properties")
-        into layout.projectDirectory.dir("src/dist/bootstrap")
-    }
-    copy {
-        from layout.buildDirectory.dir("libs/${project.name}-${project.version}.jar")
-        into layout.projectDirectory.dir("src/dist/webapp/WEB-INF/lib")
-    }
-    copy {
-        from { project.configurations.runtimeClasspath }
-        into ('src/dist/webapp/WEB-INF/lib')
-    }
-    finalizedBy distTar {
-        archivesBaseName = "${project.name}"
-        archiveExtension = 'tar.gz'
-        compression = Compression.GZIP
-
-        from layout.projectDirectory.dir("src/dist/")
-        exclude "**/.gitkeep"
-        exclude "/${project.name}-${project.version}"
-        finalizedBy distZip {
-            archivesBaseName = "${project.name}"
-
-            from layout.projectDirectory.dir("src/dist/")
-            exclude "**/.gitkeep"
-            exclude "/${project.name}-${project.version}"
-        }
-    }
-}
-
-artifacts {
-    archives layout.buildDirectory.dir("distributions/${project.name}-${project.version}.zip")
-    archives layout.buildDirectory.dir("distributions/${project.name}-${project.version}.tar.gz")
-}
-
-signing {
-    sign configurations.archives
 }
