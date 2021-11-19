@@ -30,6 +30,7 @@ import static org.ldaptive.ResultCode.SUCCESS;
 
 /**
  * Implementation of {@link IPasswordManagementService} for LDAP directory backend.
+ * Using v 2.1.0 LDAPTIVE (marking for someday when shibboleth updates...
  */
 @Slf4j
 public class LdapPasswordManagementService extends AbstractPasswordManagementService {
