@@ -58,29 +58,12 @@ dependencies {
 
     testRuntimeOnly "org.apache.commons:commons-lang3:$config.common.commonslang3.version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.'junit.jupiter.version'}"
-    testRuntimeOnly "org.springframework:spring-webmvc:$config.common.spring.version"
-    testImplementation "com.fasterxml.jackson.core:jackson-databind:$config.common.jackson.version"
-    testImplementation "com.google.guava:guava:$config.common.guava.version"
-    testImplementation "com.unboundid:unboundid-ldapsdk:$config.common.unboundid.version"
-    testImplementation "javax.servlet:javax.servlet-api:$config.common.servlet.version"
-    testImplementation "org.hibernate:hibernate-core:$config.common.hibernate.version"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${project.'junit.jupiter.version'}"
-    testImplementation "org.ldaptive:ldaptive:$config.common.ldaptive.version"
-//    testImplementation "org.mockito:mockito-core:3.12.4"
+    testImplementation "org.springframework:spring-test:${project.'spring.version'}"
+    testImplementation "org.springframework:spring-beans:${project.'spring.version'}"
+    testImplementation "com.google.guava:guava:${project.'guava.version'}"
+    testImplementation "com.unboundid:unboundid-ldapsdk:${project.'unboundid.verion'}"
 
-    testImplementation "org.springframework:spring-aop:$config.common.spring.version"
-    testImplementation "org.springframework:spring-beans:$config.common.spring.version"
-    testImplementation "org.springframework:spring-context:$config.common.spring.version"
-    testImplementation "org.springframework:spring-core:$config.common.spring.version"
-    testImplementation "org.springframework:spring-orm:$config.common.spring.version"
-    testImplementation "org.springframework:spring-test:$config.common.spring.version"
-    testImplementation "org.springframework:spring-tx:$config.common.spring.version"
-    testImplementation "org.springframework:spring-web:$config.common.spring.version"
-    testImplementation "org.springframework.boot:spring-boot-test-autoconfigure:$config.common.springboot.version"
-    testImplementation "org.slf4j:slf4j-api:$config.common.slf4j.version"
 }
-
-apply from: 'https://raw.githubusercontent.com/UniconLabs/shibboleth-plugin-parent/develop/build.gradle'
 
 test {
     useJUnitPlatform()
