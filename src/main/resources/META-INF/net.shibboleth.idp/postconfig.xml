@@ -41,5 +41,5 @@
         <property name="tokenRecordStorage" ref="passwordreset.TokenRecordStorage" />
     </bean>
 
-    <bean id="passwordreset.TokenRecordStorage" class="net.unicon.iam.shibboleth.passwordreset.token.database.DatabaseTokenRecordStorage" />
+    <bean id="passwordreset.TokenRecordStorage" class="net.unicon.iam.shibboleth.passwordreset.token.database.RdbmsTokenRecordStorage" />
 </beans>

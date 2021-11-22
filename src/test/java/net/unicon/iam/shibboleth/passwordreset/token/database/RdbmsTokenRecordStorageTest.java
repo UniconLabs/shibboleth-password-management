@@ -21,12 +21,12 @@ import org.springframework.transaction.annotation.Transactional;
 @EnableJpaRepositories("net.unicon.iam.shibboleth.passwordreset.token.database.repository")
 @EntityScan("net.unicon.iam.shibboleth.passwordreset.token.database.model")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class TestDatabaseTokenRecordStorage {
+public class RdbmsTokenRecordStorageTest {
     @Autowired
     private TokenRepository tokenRepo;
 
     @Autowired
-    private DatabaseTokenRecordStorage tokenRecordStorage;
+    private RdbmsTokenRecordStorage tokenRecordStorage;
 
     @BeforeEach
     @Transactional

@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-public class DatabaseTokenRecordStorage implements ITokenRecordStorage {
+public class RdbmsTokenRecordStorage implements ITokenRecordStorage {
     @Autowired
     private TokenRepository tokenRepository;
 
