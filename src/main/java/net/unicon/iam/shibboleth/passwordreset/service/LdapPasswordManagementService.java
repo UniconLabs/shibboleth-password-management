@@ -3,6 +3,7 @@ package net.unicon.iam.shibboleth.passwordreset.service;
 import lombok.extern.slf4j.Slf4j;
 import net.unicon.iam.shibboleth.passwordreset.support.ldap.LdapProperties;
 import org.ldaptive.BindConnectionInitializer;
+import org.ldaptive.Connection;
 import org.ldaptive.ConnectionConfig;
 import org.ldaptive.ConnectionFactory;
 import org.ldaptive.Credential;
@@ -11,12 +12,15 @@ import org.ldaptive.FilterTemplate;
 import org.ldaptive.LdapAttribute;
 import org.ldaptive.LdapEntry;
 import org.ldaptive.LdapException;
+import org.ldaptive.Response;
 import org.ldaptive.SearchOperation;
 import org.ldaptive.SearchRequest;
 import org.ldaptive.SearchResponse;
 import org.ldaptive.ad.extended.FastBindConnectionInitializer;
+import org.ldaptive.ad.extended.FastBindOperation;
 import org.ldaptive.extended.ExtendedOperation;
 import org.ldaptive.extended.ExtendedResponse;
+import org.ldaptive.extended.PasswordModifyOperation;
 import org.ldaptive.extended.PasswordModifyRequest;
 import org.ldaptive.handler.ResultPredicate;
 import org.springframework.util.Assert;
@@ -30,7 +34,6 @@ import static org.ldaptive.ResultCode.SUCCESS;
 
 /**
  * Implementation of {@link IPasswordManagementService} for LDAP directory backend.
- * Using v 2.1.0 LDAPTIVE (marking for someday when shibboleth updates...
  */
 @Slf4j
 public class LdapPasswordManagementService extends AbstractPasswordManagementService {
@@ -45,11 +48,12 @@ public class LdapPasswordManagementService extends AbstractPasswordManagementSer
     private void buildConnectionFactory() {
         ConnectionConfig config = new ConnectionConfig();
         config.setLdapUrl(ldapProperties.getUrl());
-        if (StringUtils.substringMatch(ldapProperties.getBindDn(), 0, "*") &&
-                        StringUtils.substringMatch(ldapProperties.getBindPassword(), 0, "*")) {
-            config.setConnectionInitializers(new FastBindConnectionInitializer());
+        config.setUseSSL(ldapProperties.isUseSsl());
+        if (StringUtils.substringMatch(ldapProperties.getBindDn(), 0, "*") && StringUtils.substringMatch(ldapProperties.getBindPassword(), 0, "*")) {
+            config.setConnectionInitializer(new FastBindOperation.FastBindConnectionInitializer());
         } else if (StringUtils.hasText(ldapProperties.getBindDn()) && StringUtils.hasText(ldapProperties.getBindPassword())) {
-            config.setConnectionInitializers(new BindConnectionInitializer(ldapProperties.getBindDn(), new Credential(ldapProperties.getBindPassword())));
+            config.setConnectionInitializer(new BindConnectionInitializer(ldapProperties.getBindDn(),
+                            new Credential(ldapProperties.getBindPassword())));
         }
         connectionFactory = new DefaultConnectionFactory(config);
     }
@@ -72,13 +76,13 @@ public class LdapPasswordManagementService extends AbstractPasswordManagementSer
 
     private boolean executeGenericLdapPasswordResetOperation(String dn, String newPassword) {
         log.debug("Executing password reset operation for DN: [{}]", dn);
-        try {
-            ExtendedOperation passwordModifyOperation = ExtendedOperation.builder().factory(connectionFactory).throwIf(ResultPredicate.NOT_SUCCESS).build();
-            ExtendedResponse response = passwordModifyOperation.execute(new PasswordModifyRequest(dn, null, newPassword));
-            log.debug("Password reset operation response code: [{}], message: [{}]", response.getResultCode(), response.getDiagnosticMessage());
+        try (Connection conn = connectionFactory.getConnection()) {
+            conn.open();
+            PasswordModifyOperation modifyOperation = new PasswordModifyOperation(conn);
+            Response<Credential> response = modifyOperation.execute(new PasswordModifyRequest(dn, null, new Credential(newPassword)));
+            log.debug("Password reset operation response code: [{}], message: [{}]", response.getResultCode(), response.getMessage());
             return response.getResultCode() == SUCCESS;
-        }
-        catch (LdapException e) {
+        } catch (LdapException e) {
             log.error(e.getMessage(), e);
         }
         return false;
