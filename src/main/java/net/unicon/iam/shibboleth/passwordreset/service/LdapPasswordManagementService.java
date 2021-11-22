@@ -8,21 +8,17 @@ import org.ldaptive.ConnectionConfig;
 import org.ldaptive.ConnectionFactory;
 import org.ldaptive.Credential;
 import org.ldaptive.DefaultConnectionFactory;
-import org.ldaptive.FilterTemplate;
 import org.ldaptive.LdapAttribute;
 import org.ldaptive.LdapEntry;
 import org.ldaptive.LdapException;
 import org.ldaptive.Response;
+import org.ldaptive.SearchFilter;
 import org.ldaptive.SearchOperation;
 import org.ldaptive.SearchRequest;
-import org.ldaptive.SearchResponse;
-import org.ldaptive.ad.extended.FastBindConnectionInitializer;
+import org.ldaptive.SearchResult;
 import org.ldaptive.ad.extended.FastBindOperation;
-import org.ldaptive.extended.ExtendedOperation;
-import org.ldaptive.extended.ExtendedResponse;
 import org.ldaptive.extended.PasswordModifyOperation;
 import org.ldaptive.extended.PasswordModifyRequest;
-import org.ldaptive.handler.ResultPredicate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -58,8 +54,8 @@ public class LdapPasswordManagementService extends AbstractPasswordManagementSer
         connectionFactory = new DefaultConnectionFactory(config);
     }
 
-    FilterTemplate buildFilter(final String filterQuery, final String paramName, final List<String> params) {
-        FilterTemplate filter = new FilterTemplate();
+    SearchFilter buildFilter(final String filterQuery, final String paramName, final List<String> params) {
+        SearchFilter filter = new SearchFilter();
         filter.setFilter(filterQuery);
         if (params != null) {
             IntStream.range(0, params.size()).forEach(i -> {
@@ -88,10 +84,12 @@ public class LdapPasswordManagementService extends AbstractPasswordManagementSer
         return false;
     }
 
-    private Optional<SearchResponse> executeSearchOperation(String baseDn, FilterTemplate searchFilter, String... returnAttributes) {
+    private Optional<Response<SearchResult>> executeSearchOperation(String baseDn, SearchFilter searchFilter, String... returnAttributes) {
         try {
             SearchRequest req = new SearchRequest(baseDn, searchFilter, returnAttributes);
-            SearchOperation op = new SearchOperation(connectionFactory);
+            Connection conn = connectionFactory.getConnection();
+            conn.open();
+            SearchOperation op = new SearchOperation(conn);
             return Optional.ofNullable(op.execute(req));
         }
         catch (LdapException e) {
@@ -101,9 +99,9 @@ public class LdapPasswordManagementService extends AbstractPasswordManagementSer
     }
 
     String findDnFor(String username) {
-        Optional<SearchResponse> optionalResponse = findSearchResultFor(username, "mail");
+        Optional<Response<SearchResult>> optionalResponse = findSearchResultFor(username, "mail");
         if (optionalResponse.isPresent()) {
-            LdapEntry entry = optionalResponse.get().getEntry();
+            LdapEntry entry = optionalResponse.get().getResult().getEntry();
             return entry == null ? null : entry.getDn();
         }
         return null;
@@ -112,10 +110,10 @@ public class LdapPasswordManagementService extends AbstractPasswordManagementSer
     @Override
     public String findEmailAddressFor(String username) {
         Assert.notNull(username, "username cannot be null");
-        Optional<SearchResponse> optionalResponse = findSearchResultFor(username, "mail");
+        Optional<Response<SearchResult>> optionalResponse = findSearchResultFor(username, "mail");
         return optionalResponse
                 .map(r -> {
-                    LdapEntry e = r.getEntry();
+                    LdapEntry e = r.getResult().getEntry();
                     LdapAttribute attr = e == null ? null : e.getAttribute();
                     if (attr == null) {
                         log.warn("Cannot find 'mail' attribute for [{}]", username);
@@ -126,8 +124,8 @@ public class LdapPasswordManagementService extends AbstractPasswordManagementSer
                 .orElse(null);
     }
 
-    protected Optional<SearchResponse> findSearchResultFor(String username, String... returnAttributes) {
-        FilterTemplate filter = buildFilter(ldapProperties.getSearchFilter(), "user", List.of(username));
+    protected Optional<Response<SearchResult>> findSearchResultFor(String username, String... returnAttributes) {
+        SearchFilter filter = buildFilter(ldapProperties.getSearchFilter(), "user", List.of(username));
         return executeSearchOperation(ldapProperties.getBaseDn(), filter, returnAttributes);
     }
 

@@ -8,7 +8,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.ldaptive.SearchResponse;
+import org.ldaptive.Response;
+import org.ldaptive.SearchResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -118,8 +119,8 @@ public class PasswordResetControllerTest extends AbstractEmbeddedLdapTest {
         }
 
         public String findUserPassword(String username) {
-            Optional<SearchResponse> result = findSearchResultFor(username, "userPassword");
-            return result.get().getEntry().getAttribute("userPassword").getStringValue();
+            Optional<Response<SearchResult>> result = findSearchResultFor(username, "userPassword");
+            return result.get().getResult().getEntry().getAttribute("userPassword").getStringValue();
         }
 
     }

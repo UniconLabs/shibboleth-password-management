@@ -21,13 +21,13 @@ dependencies {
     implementation platform("net.shibboleth.idp:idp-bom:$config.common.shibboleth.version")
     testImplementation platform("org.junit:junit-bom:${project.'junit.jupiter.version'}")
 
+    compileOnly "javax.persistence:javax.persistence-api:$config.common.javax.persistence.version"
     compileOnly "net.shibboleth.idp:idp-authn-api:$config.common.shibboleth.version"
     compileOnly "net.shibboleth.idp:idp-admin-api:$config.common.shibboleth.version"
     compileOnly "org.springframework:spring-tx:$config.common.spring.version"
 
     implementation "javax.mail:javax.mail-api:${project.'javax.mail.version'}"
     implementation "org.projectlombok:lombok:$config.common.lombok.version"
-
     implementation "org.springframework:spring-context-support:$config.common.spring.version", {
         exclude module: "spring-context"
         exclude module: "spring-core"
@@ -53,17 +53,27 @@ dependencies {
 
     // hibernate deps
     ['hibernate-core'].each {
-        compileOnly "org.hibernate:${it}:$config.common.hibernate.version"
+        testImplementation "org.hibernate:${it}:$config.common.hibernate.version"
     }
 
+    testRuntimeOnly "com.fasterxml.jackson.core:jackson-databind:$config.common.jackson.version"
     testRuntimeOnly "org.apache.commons:commons-lang3:$config.common.commonslang3.version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.'junit.jupiter.version'}"
-    testImplementation "org.springframework:spring-test:${project.'spring.version'}"
-    testImplementation "org.springframework:spring-beans:${project.'spring.version'}"
-    testImplementation "com.google.guava:guava:${project.'guava.version'}"
-    testImplementation "com.unboundid:unboundid-ldapsdk:${project.'unboundid.verion'}"
+    testRuntimeOnly "org.springframework:spring-webmvc:$config.common.spring.version"
 
+    testImplementation "com.google.guava:guava:$config.common.guava.version"
+    testImplementation "com.unboundid:unboundid-ldapsdk:$config.common.unboundid.version"
+    testImplementation "javax.servlet:javax.servlet-api:$config.common.servlet.version"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${project.'junit.jupiter.version'}"
+    testImplementation "org.ldaptive:ldaptive:$config.common.ldaptive.version"
+    testImplementation "org.springframework:spring-beans:$config.common.spring.version"
+    testImplementation "org.springframework:spring-orm:$config.common.spring.version"
+    testImplementation "org.springframework:spring-test:$config.common.spring.version"
+    testImplementation "org.springframework:spring-web:$config.common.spring.version"
+    testImplementation "org.springframework.boot:spring-boot-test-autoconfigure:${project.'springboot.version'}"
 }
+
+apply from: 'https://raw.githubusercontent.com/UniconLabs/shibboleth-plugin-parent/develop/build.gradle'
 
 test {
     useJUnitPlatform()
