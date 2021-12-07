@@ -3,7 +3,8 @@ package net.unicon.iam.shibboleth.passwordreset.service;
 import lombok.extern.slf4j.Slf4j;
 import net.unicon.iam.shibboleth.passwordreset.support.email.EmailProperties;
 import net.unicon.iam.shibboleth.passwordreset.support.email.EmailService;
-import net.unicon.iam.shibboleth.passwordreset.support.token.TokenRecordStorage;
+import net.unicon.iam.shibboleth.passwordreset.token.ITokenRecordStorage;
+import net.unicon.iam.shibboleth.passwordreset.token.InMemoryTokenRecordStorage;
 
 /**
  * Provides common functionality.
@@ -13,7 +14,7 @@ public abstract class AbstractPasswordManagementService implements IPasswordMana
     protected String baseUrl;
     protected EmailProperties emailProperties;
     protected EmailService emailService;
-    protected TokenRecordStorage tokenRecordStorage = new TokenRecordStorage.IN_MEMORY();
+    protected ITokenRecordStorage tokenRecordStorage = new InMemoryTokenRecordStorage();
 
     @Override
     public void clearToken(String token) {
@@ -37,7 +38,7 @@ public abstract class AbstractPasswordManagementService implements IPasswordMana
         this.emailService = service;
     }
 
-    public void setTokenRecordStorage(TokenRecordStorage storage) {
+    public void setTokenRecordStorage(ITokenRecordStorage storage) {
         this.tokenRecordStorage = storage;
     }
 }

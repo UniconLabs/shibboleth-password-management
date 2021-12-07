@@ -3,7 +3,7 @@ package net.unicon.iam.shibboleth.passwordreset.controller;
 import net.unicon.iam.shibboleth.passwordreset.AbstractEmbeddedLdapTest;
 import net.unicon.iam.shibboleth.passwordreset.service.LdapPasswordManagementService;
 import net.unicon.iam.shibboleth.passwordreset.support.ldap.LdapProperties;
-import net.unicon.iam.shibboleth.passwordreset.support.token.TokenRecordStorage;
+import net.unicon.iam.shibboleth.passwordreset.token.InMemoryTokenRecordStorage;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -106,7 +106,7 @@ public class PasswordResetControllerTest extends AbstractEmbeddedLdapTest {
     /**
      * Gives access to the in memory map to validate that the correct things are happening
      */
-    static class TestingTRS extends TokenRecordStorage.IN_MEMORY {
+    static class TestingTRS extends InMemoryTokenRecordStorage {
         public void clear() { map = new HashMap<>(); }
         public int getTokenCount() { return map.keySet().size(); }
         public String getSingleToken() { return map.keySet().toArray()[0].toString(); }

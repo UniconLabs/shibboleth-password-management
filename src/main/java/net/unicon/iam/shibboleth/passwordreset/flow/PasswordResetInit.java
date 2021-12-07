@@ -1,10 +1,7 @@
 package net.unicon.iam.shibboleth.passwordreset.flow;
 
 import lombok.extern.slf4j.Slf4j;
-import net.shibboleth.idp.profile.AbstractProfileAction;
-import net.unicon.iam.shibboleth.passwordreset.support.token.TokenRecordStorage;
-import org.opensaml.profile.context.ProfileRequestContext;
-import org.opensaml.storage.StorageService;
+import net.unicon.iam.shibboleth.passwordreset.token.ITokenRecordStorage;
 import org.springframework.webflow.action.AbstractAction;
 import org.springframework.webflow.execution.Event;
 import org.springframework.webflow.execution.RequestContext;
@@ -14,10 +11,10 @@ import javax.annotation.Nonnull;
 @Slf4j
 public class PasswordResetInit extends AbstractAction {
 
-    private final TokenRecordStorage tokenRecordStorage;
+    private final ITokenRecordStorage tokenRecordStorage;
 
 
-    public PasswordResetInit(TokenRecordStorage tokenRecordStorage) {
+    public PasswordResetInit(ITokenRecordStorage tokenRecordStorage) {
         this.tokenRecordStorage = tokenRecordStorage;
         log.debug("Creating new instance...");
         log.debug("Token storage hashcode" + tokenRecordStorage.hashCode());

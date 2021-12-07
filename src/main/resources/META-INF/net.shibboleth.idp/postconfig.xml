@@ -16,7 +16,6 @@
           p:validateAddresses="%{idp.passwordreset.mail.validateAddresses}"
           p:html="%{idp.passwordreset.mail.html}" />
 
-
     <bean id="passwordreset.EmailService" class="net.unicon.iam.shibboleth.passwordreset.support.email.SpringMailSenderEmailService">
         <constructor-arg index="0">
             <bean class="org.springframework.mail.javamail.JavaMailSenderImpl"
@@ -42,6 +41,5 @@
         <property name="tokenRecordStorage" ref="passwordreset.TokenRecordStorage" />
     </bean>
 
-    <bean id="passwordreset.TokenRecordStorage" class="net.unicon.iam.shibboleth.passwordreset.support.token.TokenRecordStorage$IN_MEMORY"/>
-
+    <bean id="passwordreset.TokenRecordStorage" class="net.unicon.iam.shibboleth.passwordreset.token.database.RdbmsTokenRecordStorage" />
 </beans>
